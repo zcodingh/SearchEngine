@@ -3,6 +3,7 @@
 
 #include "../include/cppjieba/Jieba.hpp"
 #include "SplitTool.h"
+#include "Configuration.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -17,8 +18,8 @@ using std::set;
 class DictProducer
 {
 public:
-    DictProducer(const string& dir);
-    DictProducer(const string& dir, SplitTool* splitTool);
+    DictProducer(Configuration& conf);
+    DictProducer(SplitTool* splitTool);
     ~DictProducer() {}
 
     void buildEnDict();
@@ -27,11 +28,14 @@ public:
     void store();
 
 private:
-    void cleanUpdateFrequency(const string& word, map<string, int>& freq);
-
+    void cleanUpdate(const string& word, map<string, int>& freq, set<string>& stop_words);
+    void updateFrequency(const string& word, map<string, int>& freq, set<string>& stop_words);
 public:
-    vector<string> _files;
-    vector<pair<string, int>> _dict;
+    Configuration _conf;
+    vector<string> _files_en;
+    vector<string> _files_cn;
+    vector<pair<string, int>> _dict_en;
+    vector<pair<string, int>> _dinc_cn;
     map<string, set<int>> _index;
     SplitTool* _cuttor;
 };
