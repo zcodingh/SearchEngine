@@ -7,6 +7,13 @@ using std::istringstream;
 
 Configuration::Configuration(const string& filePath) {
     parseConfigFile(filePath);
+    // To Debug
+    for (auto sec : _conf) {
+        std::cout << sec.first << "\n";
+        for (auto pair : sec.second) {
+            std::cout << "\t" << pair.first << "\t" << pair.second << "\n";
+        }
+    }
 }
 
 void Configuration::parseConfigFile(const string& filePath) {

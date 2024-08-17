@@ -31,6 +31,17 @@ DictProducer::DictProducer(Configuration& conf)
     closedir(dstream);
 }
 
+DictProducer::DictProducer(Configuration& conf, SplitTool* splitTool) 
+: _conf(conf)
+, _cuttor(splitTool)
+{
+    string dir_yuliao_en = _conf.getValue("yuliao", "dir_yuliao_en");
+    string dir_yuliao_cn = _conf.getValue("yuliao", "dir_yuliao_cn");
+    DIR* dstream = opendir(dir_yuliao_en.c_str());
+    readDir(dir_yuliao_en, _files_en);  
+    readDir(dir_yuliao_cn, _files_cn);  
+}
+
 void DictProducer::updateFrequency(const string& word, map<string, int>& freq, set<string>& stop_words) {
     if (!word.empty() && !stop_words.count(word)) {
         ++freq[word];
@@ -50,13 +61,32 @@ void DictProducer::cleanUpdate(const string& word, map<string, int>& freq, set<s
     updateFrequency(result, freq, stop_words);
 }
 
-void DictProducer::buildEnDict() {
+void DictProducer::readDir(const string& dir, vector<string>& files) {
+    DIR* dstream = opendir(dir.c_str());
+    if (dstream == nullptr) {
+        std::cerr << "Failed to open dir\n";
+    }
+    struct dirent* entry;
+    while ((entry = readdir(dstream)) != nullptr) {
+        string fileName = entry->d_name;
+        if (fileName == "." || fileName == "..") {
+            continue;
+        }
+
+        string filepath = dir + "/" + fileName;
+        files.push_back(filepath);
+    }
+    closedir(dstream);      
+}
+
+void DictProducer::buildENDict() {
     map<string, int> freq;
     set<string> stop_words;
 
     ifstream stop_words_file(_conf.getValue("yuliao", "stop_words_en"));
     if (!stop_words_file) {
-        cerr << "open file" << _conf.getValue("yuliao", "stop_words_en") << "failed\n";
+        cerr << "open file" << _conf.getValue("yuliao", "stop_words_en") << " failed\n";
+        return;
     }
     string stop_line, stop_word;
     while (getline(stop_words_file, stop_line)) {
@@ -70,7 +100,7 @@ void DictProducer::buildEnDict() {
         ifstream file(fileName);
         string line, word;
         if (!file) {
-            std::cerr << "open file" << fileName << "failed\n";
+            std::cerr << "open file" << fileName << " failed\n";
         }
 
         while (getline(file, line)) {
@@ -86,6 +116,47 @@ void DictProducer::buildEnDict() {
     }
 }
 
+void DictProducer::buildCNDict() {
+    map<string, int> freq;
+    set<string> stop_words;
+
+    ifstream stop_words_file(_conf.getValue("yuliao", "stop_words_cn"));
+    if (!stop_words_file) {
+        cerr << "open file" << _conf.getValue("yuliao", "stop_words_cn") << " failed\n";
+        return;
+    }
+    string stop_line, stop_word;
+    while (getline(stop_words_file, stop_line)) {
+        istringstream iss(stop_line);
+        iss >> stop_word;
+        stop_words.insert(stop_word);
+    }
+    stop_words_file.close();
+
+    for (auto fileName : _files_cn) {
+        ifstream file(fileName);
+        if (!file) {
+            std::cerr << "open file" << fileName << " failed\n";
+        }
+
+        string line;
+        while (getline(file, line)) {
+            vector<string> words;
+            words = _cuttor->cut(line);
+            for (auto word : words) {
+                std::cout << "sizeof word = " << word.size() << "\n";
+                if (!stop_words.count(word)) {
+                    ++freq[word];
+                }
+            }
+        }
+        file.close();
+    }
+    for (auto kv : freq) {
+        _dict_cn.push_back({kv.first, kv.second});
+    }
+}
+
 void DictProducer::createIndex() {
     int size = _dict_en.size();
     for (int i = 0; i < size; ++i) {
@@ -96,12 +167,19 @@ void DictProducer::createIndex() {
 }
 
 void DictProducer::store() {
-    ofstream ofs("../data/dict_en.dat");
-    if (!ofs) {
+    ofstream ofsEN(_conf.getValue("SavePath", "DICT_EN_PATH"));
+    ofstream ofsCN(_conf.getValue("SavePath", "DICT_CN_PATH"));
+
+    if (!ofsEN || !ofsCN) {
         cerr << "failed to create/open dict_en.dat\n"; 
     }
     for (auto kv : _dict_en) {
-        ofs << kv.first << " " << kv.second << "\n";
+        ofsEN << kv.first << " " << kv.second << "\n";
     }
-    ofs.close();
+    for (auto kv : _dict_cn) {
+        ofsCN << kv.first << " " << kv.second << "\n";
+    }
+    
+    ofsEN.close();
+    ofsCN.close();
 }
