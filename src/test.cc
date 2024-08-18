@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
     DictProducer dic(conf, split);
     dic.buildENDict();
     dic.buildCNDict();
+    dic.createIndex();
     dic.store();
 
     return 0;

@@ -144,8 +144,7 @@ void DictProducer::buildCNDict() {
             vector<string> words;
             words = _cuttor->cut(line);
             for (auto word : words) {
-                std::cout << "sizeof word = " << word.size() << "\n";
-                if (!stop_words.count(word)) {
+                if (!stop_words.count(word) && word != " " && word != "\r" && word != "\t") {
                     ++freq[word];
                 }
             }
@@ -158,10 +157,29 @@ void DictProducer::buildCNDict() {
 }
 
 void DictProducer::createIndex() {
-    int size = _dict_en.size();
-    for (int i = 0; i < size; ++i) {
+    int size_en = _dict_en.size();
+    for (int i = 0; i < size_en; ++i) {
         for (char c : _dict_en[i].first) {
-            _index[string(1, c)].insert(i);
+            _index[string(1, c)].insert(i); 
+        }
+    }
+
+    int size_cn = _dict_cn.size();
+    for (int i = 0; i < size_cn; ++i) {
+        string word = _dict_cn[i].first;
+        for (size_t j = 0; j < word.size();) {
+            unsigned char c = word[j];
+            size_t len = 1;
+            if (c >= 0xF0) {
+                len = 4;  
+            } else if (c >= 0xE0) {
+                len = 3;  
+            } else if (c >= 0xC0) {
+                len = 2; 
+            } 
+            string utf8_char = word.substr(j, len);
+            _index[utf8_char].insert(i);
+            j += len;
         }
     }
 }
@@ -169,9 +187,10 @@ void DictProducer::createIndex() {
 void DictProducer::store() {
     ofstream ofsEN(_conf.getValue("SavePath", "DICT_EN_PATH"));
     ofstream ofsCN(_conf.getValue("SavePath", "DICT_CN_PATH"));
+    ofstream ofsIndex(_conf.getValue("SavePath", "DICT_INDEX_PATH"));
 
-    if (!ofsEN || !ofsCN) {
-        cerr << "failed to create/open dict_en.dat\n"; 
+    if (!ofsEN || !ofsCN || !ofsIndex) {
+        cerr << "failed to create/open dict/index\n"; 
     }
     for (auto kv : _dict_en) {
         ofsEN << kv.first << " " << kv.second << "\n";
@@ -179,7 +198,15 @@ void DictProducer::store() {
     for (auto kv : _dict_cn) {
         ofsCN << kv.first << " " << kv.second << "\n";
     }
+    for (auto kv : _index) {
+        ofsIndex << kv.first << " ";
+        for (int val : kv.second) {
+            ofsIndex << val << " ";
+        }
+        ofsIndex << "\n";
+    }
     
     ofsEN.close();
     ofsCN.close();
+    ofsIndex.close();
 }
