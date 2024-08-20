@@ -14,19 +14,25 @@ public:
     SplitTool() {}
     virtual ~SplitTool() {}
     virtual vector<string> cut(const string& sentence) = 0;
+    static SplitTool* getInstance();
+private:
+    static void createInstance();
+    static std::unique_ptr<SplitTool> _instance;
 };
 
 class SplitToolCppJieba
 : public SplitTool
 {
 public:
-    SplitToolCppJieba(Configuration& conf);
     virtual ~SplitToolCppJieba() {}
+    static SplitToolCppJieba& getInstance();
     
     virtual vector<string> cut(const string &sentence) override;
 private:
-    Configuration& _conf;
+    SplitToolCppJieba();
     cppjieba::Jieba _jieba;
+
+    friend class SplitTool;
 };
 
 #endif

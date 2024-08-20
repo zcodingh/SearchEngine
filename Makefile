@@ -1,4 +1,4 @@
-all: bin/test	bin/ProduceDcit
+all: bin/ProduceDcit bin/server bin/client
 
 bin/Configuration.o: src/Configuration.cc
 	g++ -g -c src/Configuration.cc -o bin/Configuration.o
@@ -12,14 +12,56 @@ bin/SplitTool.o: src/SplitTool.cc
 bin/ProduceDcit.o: src/ProduceDcit.cc
 	g++ -g -c src/ProduceDcit.cc -o bin/ProduceDcit.o
 
-bin/test.o: src/test.cc
-	g++ -g -c src/test.cc -o bin/test.o
-
 bin/ProduceDcit: bin/Configuration.o bin/DictProducer.o bin/SplitTool.o bin/ProduceDcit.o
 	g++ -g bin/Configuration.o bin/DictProducer.o bin/SplitTool.o bin/ProduceDcit.o -o bin/ProduceDcit
 
-bin/test: bin/test.o
-	g++ -g bin/test.o -o bin/test
+bin/server.o: src/ServerStarter.cc
+	g++ -g -c src/ServerStarter.cc -o bin/server.o
+
+bin/Acceptor.o: src/Acceptor.cc
+	g++ -g -c src/Acceptor.cc -o bin/Acceptor.o
+
+bin/EventLoop.o: src/EventLoop.cc
+	g++ -g -c src/EventLoop.cc -o bin/EventLoop.o
+
+bin/InetAddress.o: src/InetAddress.cc
+	g++ -g -c src/InetAddress.cc -o bin/InetAddress.o
+
+bin/Socket.o: src/Socket.cc
+	g++ -g -c src/Socket.cc -o bin/Socket.o
+
+bin/SocketIO.o: src/SocketIO.cc
+	g++ -g -c src/SocketIO.cc -o bin/SocketIO.o
+
+bin/TaskQueue.o: src/TaskQueue.cc
+	g++ -g -c src/TaskQueue.cc -o bin/TaskQueue.o
+
+bin/TcpConnection.o: src/TcpConnection.cc
+	g++ -g -c src/TcpConnection.cc -o bin/TcpConnection.o
+
+bin/TcpServer.o: src/TcpServer.cc
+	g++ -g -c src/TcpServer.cc -o bin/TcpServer.o
+
+bin/ThreadPool.o: src/ThreadPool.cc
+	g++ -g -c src/ThreadPool.cc -o bin/ThreadPool.o
+
+bin/Dictionary.o: src/Dictionary.cc
+	g++ -g -c src/Dictionary.cc -o bin/Dictionary.o
+
+bin/KeyRecommander.o: src/KeyRecommander.cc
+	g++ -g -c src/KeyRecommander.cc -o bin/KeyRecommander.o
+
+bin/SearchEngineServer.o: src/SearchEngineServer.cc
+	g++ -g -c src/SearchEngineServer.cc -o bin/SearchEngineServer.o
+
+bin/server: bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/Configuration.o bin/SplitTool.o
+	g++ -g bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/Configuration.o bin/SplitTool.o -o bin/server
+
+bin/client.o: test/client.cc
+	g++ -g -c test/client.cc -o bin/client.o
+
+bin/client: bin/client.o bin/Configuration.o
+	g++ -g bin/client.o bin/Configuration.o -o bin/client
 
 clean:
-	rm -f bin/*.o bin/test bin/ProduceDcit
+	rm -f bin/*.o bin/ProduceDcit bin/server

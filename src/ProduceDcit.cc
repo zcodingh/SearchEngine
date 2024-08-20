@@ -6,9 +6,7 @@ using std::cin;
 using std::endl;
 
 int main(int argc, char* argv[]) {
-    Configuration conf("../conf/myconf.conf");
-    SplitTool* split = new SplitToolCppJieba(conf);
-    DictProducer dic(conf, split);
+    DictProducer dic;
     dic.buildENDict();
     dic.buildCNDict();
     dic.createIndex();

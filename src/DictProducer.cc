@@ -10,33 +10,31 @@ using std::ifstream;
 using std::ofstream;
 using std::istringstream;
 
-DictProducer::DictProducer(Configuration& conf)
-: _conf(conf)
-{
-    string dir_yuliao_en = _conf.getValue("yuliao", "dir_yuliao_en");
-    DIR* dstream = opendir(dir_yuliao_en.c_str());
-    if (dstream == nullptr) {
-        std::cerr << "Failed to open dir\n";
-    }
-    struct dirent* entry;
-    while ((entry = readdir(dstream)) != nullptr) {
-        string fileName = entry->d_name;
-        if (fileName == "." || fileName == "..") {
-            continue;
-        }
+// DictProducer::DictProducer(Configuration& conf)
+// : _conf(conf)
+// {
+//     string dir_yuliao_en = _conf.getValue("yuliao", "dir_yuliao_en");
+//     DIR* dstream = opendir(dir_yuliao_en.c_str());
+//     if (dstream == nullptr) {
+//         std::cerr << "Failed to open dir\n";
+//     }
+//     struct dirent* entry;
+//     while ((entry = readdir(dstream)) != nullptr) {
+//         string fileName = entry->d_name;
+//         if (fileName == "." || fileName == "..") {
+//             continue;
+//         }
 
-        string filepath = dir_yuliao_en + "/" + fileName;
-        _files_en.push_back(filepath);
-    }
-    closedir(dstream);
-}
+//         string filepath = dir_yuliao_en + "/" + fileName;
+//         _files_en.push_back(filepath);
+//     }
+//     closedir(dstream);
+// }
 
-DictProducer::DictProducer(Configuration& conf, SplitTool* splitTool) 
-: _conf(conf)
-, _cuttor(splitTool)
+DictProducer::DictProducer() 
 {
-    string dir_yuliao_en = _conf.getValue("yuliao", "dir_yuliao_en");
-    string dir_yuliao_cn = _conf.getValue("yuliao", "dir_yuliao_cn");
+    string dir_yuliao_en = Configuration::getInstance().getValue("yuliao", "dir_yuliao_en");
+    string dir_yuliao_cn = Configuration::getInstance().getValue("yuliao", "dir_yuliao_cn");
     DIR* dstream = opendir(dir_yuliao_en.c_str());
     readDir(dir_yuliao_en, _files_en);  
     readDir(dir_yuliao_cn, _files_cn);  
@@ -83,9 +81,9 @@ void DictProducer::buildENDict() {
     map<string, int> freq;
     set<string> stop_words;
 
-    ifstream stop_words_file(_conf.getValue("yuliao", "stop_words_en"));
+    ifstream stop_words_file(Configuration::getInstance().getValue("yuliao", "stop_words_en"));
     if (!stop_words_file) {
-        cerr << "open file" << _conf.getValue("yuliao", "stop_words_en") << " failed\n";
+        cerr << "open file" << Configuration::getInstance().getValue("yuliao", "stop_words_en") << " failed\n";
         return;
     }
     string stop_line, stop_word;
@@ -120,9 +118,9 @@ void DictProducer::buildCNDict() {
     map<string, int> freq;
     set<string> stop_words;
 
-    ifstream stop_words_file(_conf.getValue("yuliao", "stop_words_cn"));
+    ifstream stop_words_file(Configuration::getInstance().getValue("yuliao", "stop_words_cn"));
     if (!stop_words_file) {
-        cerr << "open file" << _conf.getValue("yuliao", "stop_words_cn") << " failed\n";
+        cerr << "open file" << Configuration::getInstance().getValue("yuliao", "stop_words_cn") << " failed\n";
         return;
     }
     string stop_line, stop_word;
@@ -142,7 +140,7 @@ void DictProducer::buildCNDict() {
         string line;
         while (getline(file, line)) {
             vector<string> words;
-            words = _cuttor->cut(line);
+            words = SplitTool::getInstance()->cut(line);
             for (auto word : words) {
                 if (!stop_words.count(word) && word != " " && word != "\r" && word != "\t") {
                     ++freq[word];
@@ -177,17 +175,19 @@ void DictProducer::createIndex() {
             } else if (c >= 0xC0) {
                 len = 2; 
             } 
-            string utf8_char = word.substr(j, len);
-            _index[utf8_char].insert(i);
+            if (len >= 3) {
+                string utf8_char = word.substr(j, len);
+                _index[utf8_char].insert(i);
+            }
             j += len;
         }
     }
 }
 
 void DictProducer::store() {
-    ofstream ofsEN(_conf.getValue("SavePath", "DICT_EN_PATH"));
-    ofstream ofsCN(_conf.getValue("SavePath", "DICT_CN_PATH"));
-    ofstream ofsIndex(_conf.getValue("SavePath", "DICT_INDEX_PATH"));
+    ofstream ofsEN(Configuration::getInstance().getValue("SavePath", "DICT_EN_PATH"));
+    ofstream ofsCN(Configuration::getInstance().getValue("SavePath", "DICT_CN_PATH"));
+    ofstream ofsIndex(Configuration::getInstance().getValue("SavePath", "DICT_INDEX_PATH"));
 
     if (!ofsEN || !ofsCN || !ofsIndex) {
         cerr << "failed to create/open dict/index\n"; 

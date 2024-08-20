@@ -1,13 +1,17 @@
 #include "../include/SplitTool.h"
 
-SplitToolCppJieba::SplitToolCppJieba(Configuration& conf)
-: _conf(conf)
-, _jieba(
-    _conf.getValue("CppJieba", "DICT_PATH"),
-    _conf.getValue("CppJieba", "HMM_PATH"),
-    _conf.getValue("CppJieba", "USER_DICT_PATH"),
-    _conf.getValue("CppJieba", "IDF_PATH"),
-    _conf.getValue("CppJieba", "STOP_WORD_PATH")
+std::unique_ptr<SplitTool> SplitTool::_instance = std::unique_ptr<SplitToolCppJieba>(new SplitToolCppJieba());
+SplitTool* SplitTool::getInstance() {
+    return _instance.get();
+}
+
+SplitToolCppJieba::SplitToolCppJieba()
+:  _jieba(
+    Configuration::getInstance().getValue("CppJieba", "DICT_PATH"),
+    Configuration::getInstance().getValue("CppJieba", "HMM_PATH"),
+    Configuration::getInstance().getValue("CppJieba", "USER_DICT_PATH"),
+    Configuration::getInstance().getValue("CppJieba", "IDF_PATH"),
+    Configuration::getInstance().getValue("CppJieba", "STOP_WORD_PATH")
 )
 {}
 

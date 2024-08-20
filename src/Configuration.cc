@@ -5,6 +5,14 @@
 using std::ifstream;
 using std::istringstream;
 
+std::unique_ptr<Configuration> Configuration::_instance;
+Configuration& Configuration::getInstance() {
+    if (!_instance) {
+        _instance.reset(new Configuration("../conf/myconf.conf"));
+    }
+    return *_instance;
+}
+
 Configuration::Configuration(const string& filePath) {
     parseConfigFile(filePath);
     // To Debug
@@ -44,6 +52,7 @@ string Configuration::getValue(const string& section, const string& key) const {
     if (secIt != _conf.end()) {
         auto keyIt = secIt->second.find(key);
         if (keyIt != secIt->second.end()) {
+            std::cout << keyIt->second << "\n";  //TODO remove
             return keyIt->second;
         }
     }

@@ -19,7 +19,7 @@ class DictProducer
 {
 public:
     DictProducer(Configuration& conf);
-    DictProducer(Configuration& conf, SplitTool* splitTool);
+    DictProducer();
     ~DictProducer() {}
 
     void buildENDict();
@@ -32,13 +32,11 @@ private:
     void updateFrequency(const string& word, map<string, int>& freq, set<string>& stop_words);
     void readDir(const string& dir, vector<string>& files);
 public:
-    Configuration _conf;
     vector<string> _files_en;
     vector<string> _files_cn;
     vector<pair<string, int>> _dict_en;
     vector<pair<string, int>> _dict_cn;
     map<string, set<int>> _index;
-    SplitTool* _cuttor;
 };
 
 #endif
