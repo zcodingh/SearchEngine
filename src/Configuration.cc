@@ -52,7 +52,6 @@ string Configuration::getValue(const string& section, const string& key) const {
     if (secIt != _conf.end()) {
         auto keyIt = secIt->second.find(key);
         if (keyIt != secIt->second.end()) {
-            std::cout << keyIt->second << "\n";  //TODO remove
             return keyIt->second;
         }
     }
