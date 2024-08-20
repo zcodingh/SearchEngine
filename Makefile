@@ -1,4 +1,4 @@
-all: bin/ProduceDcit bin/server bin/client
+all: bin/ProduceDcit bin/server bin/client bin/PageLibPreprocessor
 
 bin/Configuration.o: src/Configuration.cc
 	g++ -g -c src/Configuration.cc -o bin/Configuration.o
@@ -63,5 +63,20 @@ bin/client.o: test/client.cc
 bin/client: bin/client.o bin/Configuration.o
 	g++ -g bin/client.o bin/Configuration.o -o bin/client
 
+bin/PageLibPreprocessor.o: src/PageLibPreprocessor.cc
+	g++ -g -c src/PageLibPreprocessor.cc -o bin/PageLibPreprocessor.o
+
+bin/WebPage.o: src/WebPage.cc
+	g++ -g -c src/WebPage.cc -o bin/WebPage.o
+
+bin/FileProcessor.o: src/FileProcessor.cc
+	g++ -g -c src/FileProcessor.cc -o bin/FileProcessor.o
+
+bin/PageLib.o: src/PageLib.cc
+	g++ -g -c src/PageLib.cc -o bin/PageLib.o
+
+bin/PageLibPreprocessor: bin/PageLibPreprocessor.o bin/WebPage.o bin/FileProcessor.o bin/PageLib.o bin/Configuration.o
+	g++ -g bin/PageLibPreprocessor.o bin/WebPage.o bin/FileProcessor.o bin/PageLib.o bin/Configuration.o -ltinyxml2 -o bin/PageLibPreprocessor
+
 clean:
-	rm -f bin/*.o bin/ProduceDcit bin/server
+	rm -f bin/*.o bin/ProduceDcit bin/server bin/PageLibPreprocessor

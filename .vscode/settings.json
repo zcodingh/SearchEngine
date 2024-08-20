@@ -65,6 +65,8 @@
         "forward_list": "cpp",
         "iomanip": "cpp",
         "ranges": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp"
     }
 }
