@@ -19,7 +19,6 @@ public:
     size_t _docid;
 private:
     vector<WebPage> _rss;   //解析完一个文件后存储在此
-    // 去除字符串中的HTML标签
     string removeHTMLTags(const string & input);
 };
 

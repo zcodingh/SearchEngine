@@ -1,4 +1,4 @@
-all: bin/ProduceDcit bin/server bin/client bin/PageLibPreprocessor
+all: bin/ProduceDcit bin/server bin/client bin/PageLibPreprocessor bin/CreateInvertIndex
 
 bin/Configuration.o: src/Configuration.cc
 	g++ -g -c src/Configuration.cc -o bin/Configuration.o
@@ -78,5 +78,11 @@ bin/PageLib.o: src/PageLib.cc
 bin/PageLibPreprocessor: bin/PageLibPreprocessor.o bin/WebPage.o bin/FileProcessor.o bin/PageLib.o bin/Configuration.o
 	g++ -g bin/PageLibPreprocessor.o bin/WebPage.o bin/FileProcessor.o bin/PageLib.o bin/Configuration.o -ltinyxml2 -o bin/PageLibPreprocessor
 
+bin/CreateInvertIndex.o: src/CreateInvert.cc
+	g++ -g -c src/CreateInvert.cc -o bin/CreateInvertIndex.o
+
+bin/CreateInvertIndex: bin/CreateInvertIndex.o bin/SplitTool.o bin/Configuration.o
+	g++ -g bin/CreateInvertIndex.o bin/SplitTool.o bin/Configuration.o -o bin/CreateInvertIndex
+
 clean:
-	rm -f bin/*.o bin/ProduceDcit bin/server bin/PageLibPreprocessor
+	rm -f bin/*.o bin/ProduceDcit bin/server bin/PageLibPreprocessor bin/CreateInvertIndex

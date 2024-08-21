@@ -13,13 +13,12 @@ FileProcessor::FileProcessor()
 {}
 
 void FileProcessor::parseRss(string file) {
-    XMLDocument doc; // 创建XMLDocument对象，用于加载和解析XML文件
+    XMLDocument doc; 
     if (doc.LoadFile(file.c_str()) != XML_SUCCESS) {
         cerr << "Failed to load file " << file << "\n";
         return;
     }
 
-    // 获取XML的根元素，如果不存在则输出错误信息并返回
     XMLElement* root = doc.RootElement();
     if (!root) {
         cerr << "Invalid XML format in " << file << "\n";
@@ -32,8 +31,8 @@ void FileProcessor::parseRss(string file) {
         const char *content = item->FirstChildElement("description") ? item->FirstChildElement("description")->GetText() : "";
 
         WebPage page(
-            title ? title : "",
             url ? url : "",
+            title ? title : "",
             content ? removeHTMLTags(content) : "");
         _rss.push_back(page);
     }
@@ -41,7 +40,6 @@ void FileProcessor::parseRss(string file) {
 
 string FileProcessor::removeHTMLTags(const string & input) {
     std::regex htmlTag("<[^>]*>"); 
-    // 使用regex_replace函数将HTML标签替换为空字符串
     return regex_replace(input, htmlTag, "");
 }
 
@@ -51,7 +49,6 @@ void FileProcessor::dump(const string & filename, unordered_map<int, pair<int, i
         cerr << "Failed to open output file " << filename << "\n";
         return;
     }
-    // 遍历_rss向量，写入每个WebPage的内容
     for (const auto & item : _rss) {
         int pos = outFile.tellp();
         string doc = "<doc><docid>" + std::to_string(_docid) + 
@@ -64,5 +61,6 @@ void FileProcessor::dump(const string & filename, unordered_map<int, pair<int, i
         offsetLib.insert({_docid, {pos, len}});
         _docid++;
     }
+    _rss.clear();
     outFile.close(); 
 }

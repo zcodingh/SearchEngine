@@ -29,10 +29,8 @@ void PageLibPreprocessor::getFiltered() {
     std::ifstream ifs(Configuration::getInstance().getValue("SavePath", "WEBPAGE_PATH"));
     std::ofstream ofsPAGE(Configuration::getInstance().getValue("SavePath", "NEWPAGE_PATH"));
     std::ofstream ofsOS(Configuration::getInstance().getValue("SavePath", "NEWOFFSET_PATH"));
-    cout << "entered-----\n";                                                               // TODO rm
     int docid = 1;
     for (auto pair : _offsetLib) {
-        cout << pair.first << "\n";                 // TODO rm
         ifs.seekg(pair.second.first);
         char buf[pair.second.second + 1];
         ifs.read(buf, pair.second.second);
@@ -43,7 +41,6 @@ void PageLibPreprocessor::getFiltered() {
         uint64_t fp;
         _simhasher.make(pageContent, 5, fp);    // topN = 5
         if (checkSimhash(fp)) {
-            cout << "entered\n";                    // TODO rm
             start = sbuf.find("<title>") + 7;
             end = sbuf.find("</title>");
             string pageTitle = sbuf.substr(start, end - start);
@@ -63,9 +60,7 @@ void PageLibPreprocessor::getFiltered() {
     ifs.close();
     ofsOS.close();
     ofsPAGE.close();
-    cout << "exit-----\n";                                                               // TODO rm
 }
-
 
 bool PageLibPreprocessor::checkSimhash(uint64_t fp) {
     for (auto hash : _simhash) {
