@@ -40,28 +40,4 @@ private:
     set<string> _stop_words;
 };
 
-
-
-// class CreateInvert {
-// public:
-//     CreateInvert();
-//     void buildInvertIndex();
-//     void calculateTFIDF();
-// private:
-//     void cut(const string& sentence);
-//     void readStopWords(set<string>& stopWords, const string& path);
-//     void computeTF();
-//     void computeTFIDF();
-// private:
-//     unordered_map<string, set<std::pair<int, double>>> _invert_index_table;
-//     int _total_docs;                   
-
-//     unordered_map<string, set<int>> _word_docs;
-//     unordered_map<string, double> _idfs;
-//     unordered_map<string, set<std::pair<int, double>>> _tfs;
-
-//     vector<string> _words;       // 分词后的单词
-//     set<string> _stop_words;
-// };
-
 #endif

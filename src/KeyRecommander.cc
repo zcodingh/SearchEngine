@@ -52,22 +52,6 @@ void KeyRecommander::doQuery() {
 
             }
             i += nBytes; 
-        // string character;
-        // for (size_t i = 0; i < length(word); ++i) {
-        //     size_t nBytes = nBytesCode(word[i]);
-        //     i += (nBytes - 1);
-        //     character = word.substr(i, nBytes);
-        //     std::cout << character << "\n";     //TODO remove
-        //     auto it = index.find(character);
-        //     if (it != index.end()) {
-        //         for (int idx : it->second) {
-        //             string candidateString = dict[idx].first;
-        //             std::cout << "candidateString = " << candidateString << "\n";   //TODO remove
-        //             int dist = editDistance(candidateString, _queryWord);
-        //             candidate.insert({candidateString, dict[idx].second, dist});
-        //         }
-        //     }
-        // }
         }
     }
     if (candidate.empty())  std::cout << "candidate is empty\n";    // TODO rm

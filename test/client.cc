@@ -40,6 +40,15 @@ int main() {
     }
     json obj = nlohmann::json::parse(buf);
     std::cout << obj.dump() << "\n";
+
+    req = "1:中国科技";
+    writeTrain(sockfd, req.c_str(), req.size());
+    memset(buf, 0, sizeof(buf));
+    if (readTrain(sockfd, buf, sizeof(buf)) < 0) {
+        std::cerr << "readTrain failed !\n";
+    }
+    obj = nlohmann::json::parse(buf);
+    std::cout << obj.dump() << "\n";
 }
 
 int readTrain(int fd, char* buf, int len) {
@@ -99,8 +108,11 @@ int writen(int fd, const char* buf, int len) {
 }
 
 int writeTrain(int fd, const char* buf, int len) {
+    std::cout << "write train len = " << len << "\n";           // TODO rm
     if (writen(fd, reinterpret_cast<char*>(&len), sizeof(len)) <= 0) {
         return -1;
     }
-    return writen(fd, buf, len);
+    int ret = writen(fd, buf, len);
+    std::cout << "write ret " << ret << "bytes\n";              // TODO rm
+    return ret;
 }

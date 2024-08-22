@@ -9,11 +9,9 @@ public:
     int getDocId() { return _docid; };
     string getTitle() { return _title; };
     string getURL() { return _url; };
-    
     size_t _docid;
     string _title;
     string _url;
     string _content;
 };
-
 #endif

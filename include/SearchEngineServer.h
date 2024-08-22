@@ -4,17 +4,6 @@
 #include "../include/ThreadPool.h"
 #include "../include/TcpServer.h"
 
-
-class WebPageSearcher {
-public:
-    WebPageSearcher(const string& msg, const TcpConnectionPtr& con);
-    void doQuery();
-
-private:
-    string _msg;
-    TcpConnectionPtr _con;
-};
-
 class SearchEngineServer {
 public: 
     SearchEngineServer();

@@ -2,7 +2,7 @@
 #include "../include/SearchEngineServer.h"
 #include "../include/TcpConnection.h"
 #include "../include/KeyRecommander.h"
-// #include "../include/WebPageSearch.h"
+#include "../include/WebPageSearcher.h"
 #include <iostream>
 
 using std::cout;
@@ -47,11 +47,11 @@ void SearchEngineServer::onMessage(const TcpConnectionPtr &con) //消息格式x:
         _threadpool.addTask(std::bind(&KeyRecommander::doQuery, task));
         break;
     }
-    // case '1':{
-    //     WebPageSearcher task(msg.substr(2), con);
-    //     _threadpool.addTask(std::bind(&WebPageSearcher::doQuery, task));
-    //     break;
-    // }
+    case '1':{
+        WebPageSearcher task(msg.substr(2), con);
+        _threadpool.addTask(std::bind(&WebPageSearcher::doQuery, task));
+        break;
+    }
     default:
         break;
     }
