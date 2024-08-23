@@ -19,7 +19,6 @@ Redis::Redis(){
 }
 
 void Redis::hset(int docID, const string& field, const string& value) {
-    std::cout << "insert into " << docID << " " << field << " = " << value << "\n";     // TODO rm
     string hashKey = "doc" + std::to_string(docID);
     _redis->hset(hashKey, field, value);
 }

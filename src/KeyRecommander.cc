@@ -32,7 +32,6 @@ void KeyRecommander::doQuery() {
             std::cout << "charactre = " << character << "\n";     //TODO remove
 
             auto it = index.find(character);
-            std::cout << "index.find(character)->first = " << it->first << "\n";
             if (it != index.end()) {
                 if (nBytes == 1) {
                     for (int idx : it->second) {

@@ -1,4 +1,4 @@
-all: bin/ProduceDcit bin/server bin/client bin/PageLibPreprocessor bin/CreateInvertIndex
+all: bin/ProduceDcit bin/server bin/client bin/PageLibPreprocessor bin/CreateInvertIndex 
 
 bin/Configuration.o: src/Configuration.cc
 	g++ -g -c src/Configuration.cc -o bin/Configuration.o
@@ -69,11 +69,11 @@ bin/WebPageSearcher.o: src/WebPageSearcher.cc
 bin/WebPage.o: src/WebPage.cc
 	g++ -g -c src/WebPage.cc -o bin/WebPage.o
 
-bin/client.o: test/client.cc
-	g++ -g -c test/client.cc -o bin/client.o
+bin/client.o: src/Client.cc
+	g++ -g -c src/Client.cc -o bin/client.o
 
 bin/client: bin/client.o bin/Configuration.o
-	g++ -g bin/client.o bin/Configuration.o -o bin/client
+	g++ -g bin/client.o bin/Configuration.o -lredis++ -lhiredis -o bin/client
 
 bin/PageLibPreprocessor.o: src/PageLibPreprocessor.cc
 	g++ -g -c src/PageLibPreprocessor.cc -o bin/PageLibPreprocessor.o

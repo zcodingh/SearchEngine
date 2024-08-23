@@ -94,8 +94,6 @@ void WebPageQuery::doQuery(TcpConnectionPtr con) {
         count--;   
     }
     ifs.close();
-    std::cout << "\nmsg = " << msg.dump() << "\n";        // TODO rm
-    std::cout << "msgsize = " << msg.dump().size() << "\n";
     con->sendInLoop(msg.dump());
 }
 
