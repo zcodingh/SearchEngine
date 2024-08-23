@@ -5,3 +5,6 @@ WebPage::WebPage(string url, string title, string content)
 , _title(title)
 , _content(content)
 {}
+
+WebPage::WebPage()
+{}

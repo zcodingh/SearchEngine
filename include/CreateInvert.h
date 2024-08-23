@@ -30,7 +30,9 @@ public:
     void Normalization();
     void saveIndex(const string& outputPath);
 private:
-    void getWords(const string& page, vector<string>& words);
+    bool getPage(std::ifstream& infile, string& page);
+    void getContent(string& content);
+    void getWords(string& page, vector<string>& words);
     double calculateTF(const string& word, const vector<string>& words);
     double calculateIDF(const string& word, int totalDocs);
     void readStopWords(set<string>& stopWords, const string& path);

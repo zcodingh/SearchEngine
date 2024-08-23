@@ -3,6 +3,7 @@
 
 #include "WebPage.h"
 #include "TcpServer.h"
+#include "Redis.h"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -24,9 +25,11 @@ private:
     unordered_map<string, double> calculateWeight(const vector<string>& queryWords);
     double cosSimilarity(unordered_map<string, double>& queryWeights, 
                          unordered_map<string, double>& docWeights);
-    WebPage readWebPage(std::ifstream& ifs, int docID);
-    WebPage filterMessage(string& page);
+    bool readWebPage(std::ifstream& ifs, int docID, WebPage& result);
+    bool readRedis(int docID, WebPage& page);
+    bool filterMessage(string& page, int docID, WebPage& result);
     WebPageQuery();
+    bool parsePage(const string& page, const string& label, string& result);
     void loadOffsetLib();
     void loadInvertIndexTable();
     void loadStopWords(const string& path);

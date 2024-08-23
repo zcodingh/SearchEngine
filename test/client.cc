@@ -41,7 +41,27 @@ int main() {
     json obj = nlohmann::json::parse(buf);
     std::cout << obj.dump() << "\n";
 
-    req = "1:中国科技";
+    req = "1:在线科技公司";
+    writeTrain(sockfd, req.c_str(), req.size());
+    memset(buf, 0, sizeof(buf));
+    if (readTrain(sockfd, buf, sizeof(buf)) < 0) {
+        std::cerr << "readTrain failed !\n";
+    }
+    obj = nlohmann::json::parse(buf);
+    std::cout << obj.dump() << "\n";
+    std::cout << "\n";
+
+    req = "1:科技世界";
+    writeTrain(sockfd, req.c_str(), req.size());
+    memset(buf, 0, sizeof(buf));
+    if (readTrain(sockfd, buf, sizeof(buf)) < 0) {
+        std::cerr << "readTrain failed !\n";
+    }
+    obj = nlohmann::json::parse(buf);
+    std::cout << obj.dump() << "\n";
+    std::cout << "\n";
+
+    req = "1:中国制造";
     writeTrain(sockfd, req.c_str(), req.size());
     memset(buf, 0, sizeof(buf));
     if (readTrain(sockfd, buf, sizeof(buf)) < 0) {

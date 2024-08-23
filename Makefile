@@ -54,8 +54,11 @@ bin/KeyRecommander.o: src/KeyRecommander.cc
 bin/SearchEngineServer.o: src/SearchEngineServer.cc
 	g++ -g -c src/SearchEngineServer.cc -o bin/SearchEngineServer.o
 
-bin/server: bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/Configuration.o bin/SplitTool.o bin/WebPageQuery.o bin/WebPageSearcher.o bin/WebPage.o
-	g++ -g bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/WebPageQuery.o bin/WebPageSearcher.o bin/WebPage.o bin/Configuration.o bin/SplitTool.o -o bin/server
+bin/Redis.o: src/Redis.cc
+	g++ -g -c src/Redis.cc -o bin/Redis.o
+
+bin/server: bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/Configuration.o bin/SplitTool.o bin/WebPageQuery.o bin/WebPageSearcher.o bin/WebPage.o bin/Redis.o
+	g++ -g bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/WebPageQuery.o bin/WebPageSearcher.o bin/WebPage.o bin/Redis.o bin/Configuration.o bin/SplitTool.o -lredis++ -lhiredis -o bin/server 
 
 bin/WebPageQuery.o: src/WebPageQuery.cc
 	g++ -g -c src/WebPageQuery.cc -o bin/WebPageQuery.o

@@ -78,7 +78,13 @@ void WebPageQuery::doQuery(TcpConnectionPtr con) {
     }
     std::cout << "maxHeap size = " << maxHeap.size() << "\n";           // TODO rm
     while (!maxHeap.empty() && count > 0) {
-        WebPage page = readWebPage(ifs, maxHeap.top().first);
+        WebPage page;
+        if (!readRedis(maxHeap.top().first, page)) {
+            if (!readWebPage(ifs, maxHeap.top().first, page)) {
+                maxHeap.pop();
+                continue;
+            }
+        }
         json doc = {
             {"title", page._title},
             {"url", page._url},
@@ -109,6 +115,33 @@ size_t getBytes(const char ch) {
     return 1;
 }
 
+bool WebPageQuery::readRedis(int docID, WebPage& page) {
+    auto url = Redis::getInstance().hget(docID, "url");
+    auto title = Redis::getInstance().hget(docID, "title");
+    auto content = Redis::getInstance().hget(docID, "content");
+    if (url && title && content) {
+        page._url = *url;
+        page._title = *title;
+        page._content = *content;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool WebPageQuery::readWebPage(std::ifstream& ifs, int docID, WebPage& result) {
+    std::cout << "readWebPage docID = " << docID << "\n";
+    int pos = _offset_lib[docID - 1].first;
+    int len = _offset_lib[docID - 1].second;
+    ifs.clear();
+    ifs.seekg(pos);
+    vector<char> buf(len + 1, 0);
+    ifs.read(buf.data(), len);
+    string page(buf.begin(), buf.begin() + len);
+
+    return filterMessage(page, docID, result);
+}
+
 double WebPageQuery::cosSimilarity(unordered_map<string, double>& queryWeights, unordered_map<string, double>& docWeights) {
     // 点积、范数
     double dotProduct = 0.0, docNorm = 0.0, queryNorm = 0.0;
@@ -129,29 +162,12 @@ double WebPageQuery::cosSimilarity(unordered_map<string, double>& queryWeights, 
     return dotProduct / (std::sqrt(docNorm) * std::sqrt(queryNorm));
 }
 
-WebPage WebPageQuery::readWebPage(std::ifstream& ifs, int docID) {
-    std::cout << "readWebPage docID = " << docID << "\n";
-    int pos = _offset_lib[docID - 1].first;
-    int len = _offset_lib[docID - 1].second;
-    ifs.clear();
-    ifs.seekg(pos);
-    vector<char> buf(len + 1, 0);
-    ifs.read(buf.data(), len);
-    string page(buf.begin(), buf.begin() + len);
+bool WebPageQuery::filterMessage(string& page, int docID, WebPage& result) {
+    string pageContent, pageTitle, pageURL;
+    if (!parsePage(page, "content", pageContent) || !parsePage(page, "title", pageTitle) || !parsePage(page, "url", pageURL)) {
+        return false;
+    }
 
-    return filterMessage(page);
-}
-
-WebPage WebPageQuery::filterMessage(string& page) {
-    string::size_type start = page.find("<content>") + 9;
-    string::size_type end = page.find("</content>");
-    string pageContent = page.substr(start, end - start);
-    start = page.find("<title>") + 7;
-    end = page.find("/title");
-    string pageTitle = page.substr(start, end - start);
-    start = page.find("<url>") + 5;
-    end = page.find("/url");
-    string pageURL = page.substr(start, end - start);
     size_t len = 0;
     size_t idx;
     std::cout << "pageContent size = " << pageContent.size() << "\n";   // TODO rm
@@ -162,7 +178,31 @@ WebPage WebPageQuery::filterMessage(string& page) {
         ++len;
     }
     pageContent = pageContent.substr(0, idx);
-    return {pageURL, pageTitle, pageContent};
+
+
+    Redis::getInstance().hset(docID, "url", pageURL);
+    Redis::getInstance().hset(docID, "title", pageTitle);
+    Redis::getInstance().hset(docID, "content", pageContent);
+    result._title = pageTitle;
+    result._url = pageURL;
+    result._content = pageContent;
+    return true;
+}
+
+
+bool WebPageQuery::parsePage(const string& page, const string& label, string& result) {
+    string::size_type start = page.find("<" + label + ">") + label.size() + 2;
+    string::size_type end = page.find("</" + label + ">");
+    if (start != string::npos && end != string::npos && start < end) {  
+        result = page.substr(start, end - start); 
+        std::cout << "label = " << label << "\n";
+        std::cout << "parsePage result = " << result << "\n";           // TODO rm
+        return true;
+    }
+    result = "";
+    std::cout << "label = " << label << "\n";
+    std::cout << "parsePage result = " << result << "\n";           // TODO rm
+    return false;
 }
 
 unordered_map<string, double> WebPageQuery::calculateWeight(const vector<string>& queryWords) {
