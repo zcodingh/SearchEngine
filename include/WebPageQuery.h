@@ -3,7 +3,8 @@
 
 #include "WebPage.h"
 #include "TcpServer.h"
-#include "Redis.h"
+// #include "Redis.h"
+#include "LRUCache.h"
 #include <vector>
 #include <unordered_map>
 #include <unordered_set>
@@ -26,7 +27,8 @@ private:
     double cosSimilarity(unordered_map<string, double>& queryWeights, 
                          unordered_map<string, double>& docWeights);
     bool readWebPage(std::ifstream& ifs, int docID, WebPage& result);
-    bool readRedis(int docID, WebPage& page);
+    // bool readRedis(int docID, WebPage& page);
+    bool readLRUCache(int docID, WebPage& page);
     bool filterMessage(string& page, int docID, WebPage& result);
     WebPageQuery();
     bool parsePage(const string& page, const string& label, string& result);
@@ -38,6 +40,7 @@ private:
     vector<std::pair<int, int>> _offset_lib;
     unordered_map<string, set<std::pair<int, double>>> _invert_index_table;
     set<string> _stop_words;
+    LRUCache _cache;
 };
 
 

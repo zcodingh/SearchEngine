@@ -54,7 +54,6 @@ int SocketIO::readTrain(char* buf, int len) {
     if (readn(reinterpret_cast<char*>(&train_len), sizeof(train_len)) <= 0) {
         return -1;
     } 
-    std::cout << "train len = " << train_len << "\n";   //TODO remove 
     if (train_len > len) {
         std::cerr << "Buffer too small to hold data\n";
         return -1;

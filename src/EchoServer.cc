@@ -50,7 +50,6 @@ void EchoServer::onMessage(const TcpConnectionPtr &con)
 {
     //接收客户端的数据
     string msg = con->receive();
-    cout << ">>recv msg from client: " << msg << "\n";          //TODO remove
 
     MyTask task(msg, con);
 

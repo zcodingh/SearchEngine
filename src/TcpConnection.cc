@@ -23,7 +23,6 @@ void TcpConnection::send(const string& msg) {
 string TcpConnection::receive() {
     char buff[65535] = { 0 };
     _sockIO.readTrain(buff, sizeof(buff));
-    cout << "TcpConnect receive = " << buff << "\n";        // TODO rm
     return string(buff);
 }
 

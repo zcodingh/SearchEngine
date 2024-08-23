@@ -12,11 +12,7 @@ KeyRecommander::KeyRecommander(const string& query, const TcpConnectionPtr& con)
 {}
 
 void KeyRecommander::doQuery() {
-    std::cout << "entered doQuery()\n";      // TODO remove
     vector<string> words = SplitTool::getInstance()->cut(_queryWord);
-    for (auto word : words) {   //TODO remove
-        std::cout << word << "\n";
-    }
     const map<string, set<int>>& index = Dictionary::getInstance().getIndex();
     const vector<std::pair<string, int>>& dictEN = Dictionary::getInstance().getDictEN();
     const vector<std::pair<string, int>>& dictCN = Dictionary::getInstance().getDictCN();
@@ -29,21 +25,18 @@ void KeyRecommander::doQuery() {
                 break; // 防止越界
             }
             string character = word.substr(i, nBytes);
-            std::cout << "charactre = " << character << "\n";     //TODO remove
 
             auto it = index.find(character);
             if (it != index.end()) {
                 if (nBytes == 1) {
                     for (int idx : it->second) {
                         string candidateString = dictEN[idx].first;
-                        std::cout << "candidateString = " << candidateString << "\n";   //TODO remove
                         int dist = editDistance(candidateString, _queryWord);
                         candidate.insert({candidateString, dictEN[idx].second, dist});
                     }
                 } else {
                     for (int idx : it->second) {
                         string candidateString = dictCN[idx].first;
-                        std::cout << "candidateString = " << candidateString << "\n";   //TODO remove
                         int dist = editDistance(candidateString, _queryWord);
                         candidate.insert({candidateString, dictCN[idx].second, dist});
                     }
@@ -64,8 +57,6 @@ void KeyRecommander::doQuery() {
         _result.pop();
         ++count;
     }
-    std::cout << "msg = " << msg.dump() << "\n";        // TODO rm
-    std::cout << "msgsize = " << msg.dump().size() << "\n";
     _con->sendInLoop(msg.dump());
 }
 

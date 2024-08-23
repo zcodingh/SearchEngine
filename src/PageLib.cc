@@ -22,9 +22,6 @@ PageLib::PageLib(FileProcessor& processor)
         string filepath = dir + "/" + fileName;
         _files.push_back(filepath);
     }
-    for (auto file : _files) {
-        std::cout << file << "\n";  // TODO rm
-    }
     closedir(dstream); 
 }
 

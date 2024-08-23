@@ -22,6 +22,7 @@ WebPageQuery::WebPageQuery() {
     loadOffsetLib();
     loadStopWords(Configuration::getInstance().getValue("yuliao", "stop_words_cn"));
     loadStopWords(Configuration::getInstance().getValue("yuliao", "stop_words_en"));
+    _cache.showResultList();                                    // TODO rm
 }
 
 void WebPageQuery::doQuery(TcpConnectionPtr con) {
@@ -36,17 +37,12 @@ void WebPageQuery::doQuery(TcpConnectionPtr con) {
             std::cerr << "_inver_index_table find fail\n";
             continue;
         }
-        std::cout << "it->first = " << it->first << "\n";       // TODO rm
 
         set<int> termDocs;
         for (auto& pair : it->second) {         // pair = [docID : docWordWeight]
             termDocs.insert(pair.first);
             docWeights[pair.first][query.first] = pair.second;
         }
-        for (int ele : termDocs) {          // TODO rm
-            std::cout << ele << " ";
-        }
-        std::cout << "\n";
         if (first) {
             commonDocs = std::move(termDocs);
             first = false;
@@ -76,10 +72,9 @@ void WebPageQuery::doQuery(TcpConnectionPtr con) {
     if (!ifs) {
         std::cerr << "open page failed\n";
     }
-    std::cout << "maxHeap size = " << maxHeap.size() << "\n";           // TODO rm
     while (!maxHeap.empty() && count > 0) {
         WebPage page;
-        if (!readRedis(maxHeap.top().first, page)) {
+        if (!readLRUCache(maxHeap.top().first, page)) {
             if (!readWebPage(ifs, maxHeap.top().first, page)) {
                 maxHeap.pop();
                 continue;
@@ -113,22 +108,34 @@ size_t getBytes(const char ch) {
     return 1;
 }
 
-bool WebPageQuery::readRedis(int docID, WebPage& page) {
-    auto url = Redis::getInstance().hget(docID, "url");
-    auto title = Redis::getInstance().hget(docID, "title");
-    auto content = Redis::getInstance().hget(docID, "content");
-    if (url && title && content) {
-        page._url = *url;
-        page._title = *title;
-        page._content = *content;
-        return true;
-    } else {
+// bool WebPageQuery::readRedis(int docID, WebPage& page) {
+//     auto url = Redis::getInstance().hget(docID, "url");
+//     auto title = Redis::getInstance().hget(docID, "title");
+//     auto content = Redis::getInstance().hget(docID, "content");
+//     if (url && title && content) {
+//         page._url = *url;
+//         page._title = *title;
+//         page._content = *content;
+//         return true;
+//     } else {
+//         return false;
+//     }
+// }
+
+
+bool WebPageQuery::readLRUCache(int docID, WebPage& page) {
+    string dirtPage = _cache.getElement(docID);
+    string url, title, content;
+    if (!parsePage(dirtPage, "content", content) || !parsePage(dirtPage, "title", title) || !parsePage(dirtPage, "url", url)) {
         return false;
     }
+    page._content = content;
+    page._title = title;
+    page._url = url;
+    return true;
 }
 
 bool WebPageQuery::readWebPage(std::ifstream& ifs, int docID, WebPage& result) {
-    std::cout << "readWebPage docID = " << docID << "\n";
     int pos = _offset_lib[docID - 1].first;
     int len = _offset_lib[docID - 1].second;
     ifs.clear();
@@ -168,7 +175,6 @@ bool WebPageQuery::filterMessage(string& page, int docID, WebPage& result) {
 
     size_t len = 0;
     size_t idx;
-    std::cout << "pageContent size = " << pageContent.size() << "\n";   // TODO rm
     for(idx = 0; idx < pageContent.size() && len < 100; ++idx) {        // 取前100个字符
         int nBytes = getBytes(pageContent[idx]);
         if (idx + nBytes >= pageContent.size()) break;
@@ -178,9 +184,11 @@ bool WebPageQuery::filterMessage(string& page, int docID, WebPage& result) {
     pageContent = pageContent.substr(0, idx);
 
 
-    Redis::getInstance().hset(docID, "url", pageURL);
-    Redis::getInstance().hset(docID, "title", pageTitle);
-    Redis::getInstance().hset(docID, "content", pageContent);
+    // Redis::getInstance().hset(docID, "url", pageURL);
+    // Redis::getInstance().hset(docID, "title", pageTitle);
+    // Redis::getInstance().hset(docID, "content", pageContent);
+    _cache.addElement(docID, page);         // cache
+    _cache.showResultList();                                    // TODO rm
     result._title = pageTitle;
     result._url = pageURL;
     result._content = pageContent;
@@ -193,13 +201,9 @@ bool WebPageQuery::parsePage(const string& page, const string& label, string& re
     string::size_type end = page.find("</" + label + ">");
     if (start != string::npos && end != string::npos && start < end) {  
         result = page.substr(start, end - start); 
-        std::cout << "label = " << label << "\n";
-        std::cout << "parsePage result = " << result << "\n";           // TODO rm
         return true;
     }
     result = "";
-    std::cout << "label = " << label << "\n";
-    std::cout << "parsePage result = " << result << "\n";           // TODO rm
     return false;
 }
 
@@ -224,7 +228,6 @@ void WebPageQuery::cut(const string& query) {
     for (auto& word : tmp) {
         if (!_stop_words.count(word) && word != " " && word != "\n" && word != "\r" && word != "\t") {
             _query_words.emplace_back(word);
-            std::cout << "cut word = " << word << "\n";             // TODO rm
         }
     }
 }
