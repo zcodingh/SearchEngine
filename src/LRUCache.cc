@@ -9,17 +9,17 @@ LRUCache::LRUCache(size_t num)
     _hash_map.clear();
 }
 
-void LRUCache::addElement(int docID, const string& value) {
+void LRUCache::addElement(const string& query, const string& value) {
     std::lock_guard<mutex> lock(_mutex);
-    auto it = _hash_map.find(docID);
+    auto it = _hash_map.find(query);
     if (it != _hash_map.end()) {
         // 更新现有元素
         it->second->second = value;
         _result_list.splice(_result_list.begin(), _result_list, it->second);
     } else {
         // 添加新元素
-        _result_list.emplace_front(docID, value);
-        _hash_map[docID] = _result_list.begin();
+        _result_list.emplace_front(query, value);
+        _hash_map[query] = _result_list.begin();
     }
     
     // 检查缓存容量是否超限
@@ -30,9 +30,9 @@ void LRUCache::addElement(int docID, const string& value) {
     }
 }
 
-string LRUCache::getElement(int docID) {
+string LRUCache::getElement(const string& query) {
     std::lock_guard<mutex> lock(_mutex);
-    auto it = _hash_map.find(docID);
+    auto it = _hash_map.find(query);
     if (it != _hash_map.end()) {
         _result_list.splice(_result_list.begin(), _result_list, it->second);
         return it->second->second;

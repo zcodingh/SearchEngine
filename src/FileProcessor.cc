@@ -25,15 +25,13 @@ void FileProcessor::parseRss(string file) {
         return;
     }
 
-    for (XMLElement *item = root->FirstChildElement("channel")->FirstChildElement("item"); item; item = item->NextSiblingElement("item")){
+    for (XMLElement *item = root->FirstChildElement("channel")->FirstChildElement("item"); item; 
+            item = item->NextSiblingElement("item")){
         const char *title = item->FirstChildElement("title") ? item->FirstChildElement("title")->GetText() : "";
         const char *url = item->FirstChildElement("link") ? item->FirstChildElement("link")->GetText() : "";
         const char *content = item->FirstChildElement("description") ? item->FirstChildElement("description")->GetText() : "";
 
-        WebPage page(
-            url ? url : "",
-            title ? title : "",
-            content ? removeHTMLTags(content) : "");
+        WebPage page(url, title, removeHTMLTags(content));
         _rss.push_back(page);
     }
 }

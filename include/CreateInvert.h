@@ -26,9 +26,9 @@ struct PairHash {
 class CreateInvertIndex {
 public:
     CreateInvertIndex();
-    void buildIndex(const string& webpagePath);
-    void Normalization();
-    void saveIndex(const string& outputPath);
+    void buildIndex(const string& webpagePath);     // 初步计算权重
+    void Normalization();                           // 归一化
+    void saveIndex(const string& outputPath);       // 保存
 private:
     bool getPage(std::ifstream& infile, string& page);
     void getContent(string& content);

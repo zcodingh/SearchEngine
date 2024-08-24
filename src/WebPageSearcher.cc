@@ -12,7 +12,11 @@ WebPageSearcher::WebPageSearcher(const string& query, const TcpConnectionPtr& co
 
 void WebPageSearcher::doQuery() {
     WebPageQuery::getInstance().cut(_query);
-    WebPageQuery::getInstance().doQuery(_con);
+    WebPageQuery::getInstance().doQuery(_query, _con);
 }
 
+
+string WebPageSearcher::getQuery() {
+    return _query;
+}
 

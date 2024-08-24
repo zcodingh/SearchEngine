@@ -6,7 +6,7 @@ using std::vector;
 using std::unordered_map;
 using std::pair;
 
-class PageLib {
+class PageLib {     // 解析xml文件得到网页库和偏移库
 public:
     PageLib(FileProcessor& processer);
     void store();

@@ -12,20 +12,19 @@ KeyRecommander::KeyRecommander(const string& query, const TcpConnectionPtr& con)
 {}
 
 void KeyRecommander::doQuery() {
-    vector<string> words = SplitTool::getInstance()->cut(_queryWord);
     const map<string, set<int>>& index = Dictionary::getInstance().getIndex();
     const vector<std::pair<string, int>>& dictEN = Dictionary::getInstance().getDictEN();
     const vector<std::pair<string, int>>& dictCN = Dictionary::getInstance().getDictCN();
-    set<CandidateResult> candidate;                 // TODO 若要节省内存可省去set，每得到一个就直接加入
+    set<CandidateResult> candidate;                 
+    vector<string> words = SplitTool::getInstance()->cut(_queryWord);
     for (auto word : words) {   //召回       word是一个词，还需要分出字符
         size_t i = 0;
         while (i < word.size()) {
             size_t nBytes = nBytesCode(word[i]);
             if (i + nBytes > word.size()) {
-                break; // 防止越界
+                break; 
             }
             string character = word.substr(i, nBytes);
-
             auto it = index.find(character);
             if (it != index.end()) {
                 if (nBytes == 1) {
@@ -41,7 +40,6 @@ void KeyRecommander::doQuery() {
                         candidate.insert({candidateString, dictCN[idx].second, dist});
                     }
                 }
-
             }
             i += nBytes; 
         }

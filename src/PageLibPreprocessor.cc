@@ -71,6 +71,7 @@ bool PageLibPreprocessor::checkSimhash(uint64_t fp) {
     _simhash.push_back(fp);
     return true;
 }
+
 int main() {
     FileProcessor processor;
     PageLib lib(processor);

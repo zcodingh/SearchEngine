@@ -20,6 +20,7 @@ class WebPageSearcher {
 public:
     WebPageSearcher(const string& query, const TcpConnectionPtr& con);
     void doQuery();
+    string getQuery();
 private:
     string _query;
     TcpConnectionPtr _con;

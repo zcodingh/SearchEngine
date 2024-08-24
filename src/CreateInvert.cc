@@ -146,7 +146,7 @@ void CreateInvertIndex::readStopWords(set<string>& stopWords, const string& path
     string stop_line, stop_word;
     while (getline(stop_words_file, stop_line)) {
         std::istringstream iss(stop_line);
-        iss >> stop_word;                           // TODO 单词末尾有空格吗？
+        iss >> stop_word;                           
         stopWords.insert(stop_word);
     }
     stop_words_file.close();

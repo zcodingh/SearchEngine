@@ -18,7 +18,6 @@ using std::set;
 class DictProducer
 {
 public:
-    DictProducer(Configuration& conf);
     DictProducer();
     ~DictProducer() {}
 

@@ -17,7 +17,9 @@ WebPageQuery& WebPageQuery::getInstance() {
     return *_instance;
 }
 
-WebPageQuery::WebPageQuery() {
+WebPageQuery::WebPageQuery()
+: _max_heap(comp)
+{
     loadInvertIndexTable();
     loadOffsetLib();
     loadStopWords(Configuration::getInstance().getValue("yuliao", "stop_words_cn"));
@@ -25,12 +27,18 @@ WebPageQuery::WebPageQuery() {
     _cache.showResultList();                                    // TODO rm
 }
 
-void WebPageQuery::doQuery(TcpConnectionPtr con) {
+void WebPageQuery::doQuery(const string& query, TcpConnectionPtr con) {
+    string cacheMSG;
+    if ((cacheMSG = _cache.getElement(query)) != "") {
+        con->sendInLoop(cacheMSG);
+        std::cout << "cache hit\n";
+    }
     auto queryWeights = calculateWeight(_query_words);
     unordered_map<int, unordered_map<string, double>> docWeights;
-
+ 
     set<int> commonDocs;
     bool first = true;
+    // 获取各个词的交集
     for (auto& query : queryWeights) {          // query = [queryWord : queryWeight]
         auto it = _invert_index_table.find(query.first);
         if (it == _invert_index_table.end()) {
@@ -61,34 +69,37 @@ void WebPageQuery::doQuery(TcpConnectionPtr con) {
     auto comp = [](const std::pair<int, double>& a, const std::pair<int, double>& b) {
         return a.second > b.second; 
     };
-    std::priority_queue<std::pair<int, double>, std::vector<std::pair<int, double>>, decltype(comp)> maxHeap(comp);
     for (int docId : commonDocs) {
         double similarity = cosSimilarity(docWeights[docId], queryWeights);
-        maxHeap.emplace(docId, similarity);
+        _max_heap.emplace(docId, similarity);
     }
+    sendMessage(con, query);
+}
+
+
+void WebPageQuery::sendMessage(TcpConnectionPtr con, const string& query) {
     json msg = json::array();
     int count = 5;      //默认发出前5个网页
     std::ifstream ifs(Configuration::getInstance().getValue("SavePath", "NEWPAGE_PATH"));
     if (!ifs) {
         std::cerr << "open page failed\n";
     }
-    while (!maxHeap.empty() && count > 0) {
+    while (!_max_heap.empty() && count > 0) {
         WebPage page;
-        if (!readLRUCache(maxHeap.top().first, page)) {
-            if (!readWebPage(ifs, maxHeap.top().first, page)) {
-                maxHeap.pop();
-                continue;
-            }
+        if (!readWebPage(ifs, _max_heap.top().first, page)) {
+            _max_heap.pop();
+            continue;
         }
         json doc = {
             {"title", page._title},
             {"url", page._url},
             {"content", page._content}};
         msg.push_back(doc);
-        maxHeap.pop();
+        _max_heap.pop();
         count--;   
     }
     ifs.close();
+    _cache.addElement(query, msg.dump());
     con->sendInLoop(msg.dump());
 }
 
@@ -106,33 +117,6 @@ size_t getBytes(const char ch) {
         return nBytes;
     }
     return 1;
-}
-
-// bool WebPageQuery::readRedis(int docID, WebPage& page) {
-//     auto url = Redis::getInstance().hget(docID, "url");
-//     auto title = Redis::getInstance().hget(docID, "title");
-//     auto content = Redis::getInstance().hget(docID, "content");
-//     if (url && title && content) {
-//         page._url = *url;
-//         page._title = *title;
-//         page._content = *content;
-//         return true;
-//     } else {
-//         return false;
-//     }
-// }
-
-
-bool WebPageQuery::readLRUCache(int docID, WebPage& page) {
-    string dirtPage = _cache.getElement(docID);
-    string url, title, content;
-    if (!parsePage(dirtPage, "content", content) || !parsePage(dirtPage, "title", title) || !parsePage(dirtPage, "url", url)) {
-        return false;
-    }
-    page._content = content;
-    page._title = title;
-    page._url = url;
-    return true;
 }
 
 bool WebPageQuery::readWebPage(std::ifstream& ifs, int docID, WebPage& result) {
@@ -187,8 +171,6 @@ bool WebPageQuery::filterMessage(string& page, int docID, WebPage& result) {
     // Redis::getInstance().hset(docID, "url", pageURL);
     // Redis::getInstance().hset(docID, "title", pageTitle);
     // Redis::getInstance().hset(docID, "content", pageContent);
-    _cache.addElement(docID, page);         // cache
-    _cache.showResultList();                                    // TODO rm
     result._title = pageTitle;
     result._url = pageURL;
     result._content = pageContent;

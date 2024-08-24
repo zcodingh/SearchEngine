@@ -16,7 +16,6 @@ public:
     virtual vector<string> cut(const string& sentence) = 0;
     static SplitTool* getInstance();
 private:
-    static void createInstance();
     static std::unique_ptr<SplitTool> _instance;
 };
 

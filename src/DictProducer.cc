@@ -150,7 +150,7 @@ void DictProducer::buildCNDict() {
         file.close();
     }
     for (auto kv : freq) {
-        _dict_cn.push_back({kv.first, kv.second});
+        _dict_cn.emplace_back(kv.first, kv.second);
     }
 }
 

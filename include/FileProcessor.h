@@ -10,15 +10,14 @@ using std::pair;
 using std::string;
 using std::vector;
 
-class FileProcessor
-{
+class FileProcessor {
 public:
     FileProcessor();
     void parseRss(string file);
     void dump(const string & filename, unordered_map<int, pair<int, int>>& offsetLib);
     size_t _docid;
 private:
-    vector<WebPage> _rss;   //解析完一个文件后存储在此
+    vector<WebPage> _rss; 
     string removeHTMLTags(const string & input);
 };
 
