@@ -1,6 +1,7 @@
 #ifndef __EVENTLOOP_H__
 #define __EVENTLOOP_H__
 
+#include <sys/timerfd.h>
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -28,6 +29,8 @@ public:
     void loop();
     void unloop();
 
+    void setTimer(int initialSec, int intervalSec);
+
     int createEpollFd();
     void waitEpollFd();
 
@@ -42,6 +45,8 @@ public:
     void setCloseCallback(TcpConnectionCallback&& cb);
 
     int createEventFd();
+    int createTimerFd();
+    void handleTimer();
     void handleRead();
     void wakeup();
     void doPendingFunctors();
@@ -55,6 +60,7 @@ private:
     unordered_map<int, TcpConnectionPtr> _conns;
 
     int _evtfd;
+    int _timerfd;
     vector<Functor> _pendings;
     mutex _mutex;
 

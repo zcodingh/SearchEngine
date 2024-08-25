@@ -3,6 +3,7 @@
 #include "../include/SplitTool.h"
 #include "../include/nlohmann/json.hpp"
 #include "../include/TcpConnection.h"
+#include "../include/CacheManager.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -24,15 +25,19 @@ WebPageQuery::WebPageQuery()
     loadOffsetLib();
     loadStopWords(Configuration::getInstance().getValue("yuliao", "stop_words_cn"));
     loadStopWords(Configuration::getInstance().getValue("yuliao", "stop_words_en"));
-    _cache.showResultList();                                    // TODO rm
 }
 
 void WebPageQuery::doQuery(const string& query, TcpConnectionPtr con) {
     string cacheMSG;
-    if ((cacheMSG = _cache.getElement(query)) != "") {
+    LRUCache* threadCache = CacheManager::getInstance().getThreaadCache(pthread_self());
+    std::cout << "thread id = " << pthread_self() << "\n";      // DEBUG
+    if ((cacheMSG = threadCache->getElement(query)) != "") {
         con->sendInLoop(cacheMSG);
-        std::cout << "cache hit\n";
+        std::cout << "cache hit\n";         // DEBUG
+        return;
     }
+    std::cout << "cache not hit\n";         // DEBUG
+
     auto queryWeights = calculateWeight(_query_words);
     unordered_map<int, unordered_map<string, double>> docWeights;
  
@@ -99,7 +104,8 @@ void WebPageQuery::sendMessage(TcpConnectionPtr con, const string& query) {
         count--;   
     }
     ifs.close();
-    _cache.addElement(query, msg.dump());
+    LRUCache* threadCache = CacheManager::getInstance().getThreaadCache(pthread_self());
+    threadCache->addElement(query, msg.dump());
     con->sendInLoop(msg.dump());
 }
 

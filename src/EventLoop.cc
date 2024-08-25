@@ -1,9 +1,11 @@
 #include "../include/EventLoop.h"
 #include "../include/Acceptor.h"
 #include "../include/TcpConnection.h"
+#include "../include/CacheManager.h"
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
+#include <cstring>
 #include <iostream>
 
 using std::cout;
@@ -17,15 +19,29 @@ EventLoop::EventLoop(Acceptor& acceptor)
 , _acceptor(acceptor)
 , _evtfd(createEventFd())
 , _mutex()
+, _timerfd(createTimerFd())
 {
     int listenfd = _acceptor.fd();
     addEpollReadFd(listenfd);
     addEpollReadFd(_evtfd);
+    addEpollReadFd(_timerfd);
+    setTimer(5, 5);
 }
 
 EventLoop::~EventLoop() {
     close(_epfd);
     close(_evtfd);
+}
+
+void EventLoop::setTimer(int initialSec, int intervalSec) {
+    struct itimerspec it;
+    memset(&it, 0, sizeof(it));
+    it.it_value.tv_sec = initialSec;
+    it.it_interval.tv_sec = intervalSec;
+    
+    if(::timerfd_settime(_timerfd, 0, &it, nullptr) == -1) {
+        perror("timerfd_settime");
+    }
 }
 
 void EventLoop::loop() {
@@ -38,6 +54,7 @@ void EventLoop::loop() {
 void EventLoop::unloop() {
     _isLooping = false;
 }
+
 
 int EventLoop::createEpollFd() {
     int fd = ::epoll_create(1);
@@ -73,6 +90,9 @@ void EventLoop::waitEpollFd() {
             } else if (fd == _evtfd) {
                 handleRead();
                 doPendingFunctors();
+            } else if (fd == _timerfd) {
+                handleTimer();
+                CacheManager::getInstance().syncCaches();
             } else {
                 handleMessage(fd);
             }
@@ -148,6 +168,22 @@ int EventLoop::createEventFd() {
         return -1;
     }
     return fd;
+}
+
+int EventLoop::createTimerFd() {
+    int timerfd = ::timerfd_create(CLOCK_REALTIME, 0);
+    if(timerfd == -1) {
+        perror("timerfd_create");
+    }
+    return timerfd;
+}
+
+
+void EventLoop::handleTimer() {
+    uint64_t one = 0;
+    if (::read(_timerfd, &one, sizeof(uint64_t)) != sizeof(uint64_t)) {
+        perror("handleTimer");
+    }    
 }
 
 void EventLoop::handleRead() {

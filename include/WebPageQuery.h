@@ -20,7 +20,6 @@ using std::unique_ptr;
 
 
 class WebPageQuery {
-    
     using maxHeapType = std::priority_queue<std::pair<int, double>, std::vector<std::pair<int, double>>, 
                         bool (*)(const std::pair<int, double>&, const std::pair<int, double>&)>;
 public:
@@ -46,7 +45,7 @@ private:
     vector<std::pair<int, int>> _offset_lib;
     unordered_map<string, set<std::pair<int, double>>> _invert_index_table;
     set<string> _stop_words;
-    LRUCache _cache;
+    // LRUCache _cache;     change to CacheManager
     maxHeapType _max_heap;
     static bool comp(const std::pair<int, double>& a, const std::pair<int, double>& b) {
         return a.second > b.second;

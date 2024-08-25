@@ -60,8 +60,17 @@ bin/SearchEngineServer.o: src/SearchEngineServer.cc
 bin/LRUCache.o: src/LRUCache.cc
 	g++ -g -c src/LRUCache.cc -o bin/LRUCache.o
 
-bin/server: bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/Configuration.o bin/SplitTool.o bin/WebPageQuery.o bin/WebPageSearcher.o bin/WebPage.o bin/LRUCache.o
-	g++ -g bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o bin/KeyRecommander.o bin/SearchEngineServer.o bin/WebPageQuery.o bin/WebPageSearcher.o bin/WebPage.o  bin/Configuration.o bin/SplitTool.o bin/LRUCache.o -o bin/server 
+bin/CacheManager.o: src/CacheManager.cc
+	g++ -g -c src/CacheManager.cc -o bin/CacheManager.o
+
+bin/server: bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o \
+			bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o \
+			bin/KeyRecommander.o bin/SearchEngineServer.o bin/Configuration.o bin/SplitTool.o bin/WebPageQuery.o \
+			bin/WebPageSearcher.o bin/WebPage.o bin/LRUCache.o bin/CacheManager.o
+	g++ -g bin/server.o bin/Acceptor.o bin/EventLoop.o bin/InetAddress.o bin/Socket.o bin/SocketIO.o \
+		   bin/TaskQueue.o bin/TcpConnection.o bin/TcpServer.o bin/ThreadPool.o bin/Dictionary.o \
+		   bin/KeyRecommander.o bin/SearchEngineServer.o bin/WebPageQuery.o bin/WebPageSearcher.o \
+		   bin/WebPage.o  bin/Configuration.o bin/SplitTool.o bin/LRUCache.o bin/CacheManager.o -o bin/server 
 
 bin/WebPageQuery.o: src/WebPageQuery.cc
 	g++ -g -c src/WebPageQuery.cc -o bin/WebPageQuery.o
